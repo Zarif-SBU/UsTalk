@@ -1,3 +1,14 @@
 body {
   margin: 0;
 }
+
+body, * {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+p {
+  margin-bottom: 1em; /* Set a bottom margin for paragraphs */
+  margin-top: 1em
+}
