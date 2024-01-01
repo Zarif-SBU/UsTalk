@@ -2,8 +2,12 @@ import { useState } from "react";
 import React  from "react";
 import axios from "axios";
 import {Link} from 'react-router-dom'
+import {withRouter} from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 
 export default function SignUp() {
+    const navigate = useNavigate();
+
     const [email, setEmail] = useState('');
     const [username, setUsername] = useState('');
     const [name, setName] = useState('');
@@ -14,9 +18,19 @@ export default function SignUp() {
         console.log('username: ', username);
         console.log('name: ', name);
         console.log('password: ', password);
-        let response = await axios.post('http://localhost:8000/signup', {email, username, name, password});
-        console.log(response);
+        try {
+            let response = await axios.post('http://localhost:8000/signup', {email, username, name, password});
+            if (response.status === 201) {
+                console.log('Signup successful!');
+                navigate('/login');
+            } else {
+                console.log('Signup failed:', response.data.error);
+            }
+        } catch (error) {
+            console.error('Error: ', error.message);
+        }
     }
+
     return(<div>
         <div id = 'login'>
             <img id="logo" alt = 'logo' src={process.env.PUBLIC_URL + '/logo.png'}/>
@@ -28,7 +42,7 @@ export default function SignUp() {
             <button id = 'loginButton' onClick={handleSignUp}> Sign up </button>
         </div>
         <div id = 'notlogin'>
-            <p>Already have an account? <Link to="/">Log in</Link></p>
+            <p>Already have an account? <Link to="/login">Log in</Link></p>
         </div>
     </div>);
 }

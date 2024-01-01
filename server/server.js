@@ -37,7 +37,7 @@ db.on('connected', function () {
 
 app.use(
     session({
-        secret: sessionSecret,
+        secret: "${secret}",
         cookie: {
             maxAge: 24 * 60 * 60 * 1000,
             domain: 'localhost',
@@ -67,7 +67,7 @@ app.post('/login', async (req, res) => {
 
         if (user && await bcrypt.compare(password, user.passwordHash)) {
             req.session.user = username.trim();
-            res.status(200).send('Login successful! ' + req.sessionID);
+            res.status(200).send('Login successful! ' + "req.sessionID");
         } else {
             res.status(401).json({ error: 'Invalid credentials' });
         }
