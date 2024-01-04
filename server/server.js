@@ -1,59 +1,85 @@
+const fs = require('fs');
+const path = require('path');
 const express = require('express');
 const session = require('express-session');
-const MongoStore = require('connect-mongo')(session);
-const cors = require('cors');
-const bcrypt = require('bcrypt');
-const mongoose = require('mongoose');
-const users = require('./models/user');
-
+const MongoStore = require('connect-mongo');
 const app = express();
+var cors = require('cors');
+const bcrypt = require('bcrypt');
 const port = 8000;
 
 const saltRounds = 10;
-const sessionSecret = process.env.SESSION_SECRET || 'defaultSecret';
+const sessionSecret = process.argv[2];
 
 app.use(cors({
-    origin: 'http://localhost:3000',
-    methods: ["POST", "PUT", "GET", "OPTIONS", "HEAD"],
-    credentials: true,
+  origin: 'http://localhost:3000',
+  methods: ["POST", "PUT", "GET", "OPTIONS", "HEAD"],
+  credentials: true,
 }));
 
 app.use(express.json());
+let users= require('./models/user');
 
 app.listen(port, () => {
-    console.log(`Example app listening on port ${port}`);
+  console.log(`Example app listening on port ${port}`)
+})
+
+//TERMINATE GRACEFULLY
+process.on('SIGINT', ()=>{  
+  console.log('Server closed. Database instance disconnected');
+  server.close(()=>{
+      db.close(() => {
+        process.exit(0);
+      });
+    });
 });
 
-mongoose.connect("mongodb://127.0.0.1:27017/WeChat", {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-})
-    .then(() => console.log('Connected to database'))
-    .catch(error => console.error('Error connecting to database:', error));
 
-const db = mongoose.connection;
+let mongoose = require('mongoose');
+let mongoDB = "mongodb://127.0.0.1:27017/WeChat";
+mongoose.connect(mongoDB, {useNewUrlParser: true, useUnifiedTopology: true})
+  .then(() => console.log('Connected to database'))
+  .catch(error => console.error('Error connecting to database:', error));
+let db = mongoose.connection;
 
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 
+db.on('connected', function() {
+  console.log('Connected to database');
+});
+
 app.use(
-    session({
-        secret: sessionSecret,
-        cookie: {
-            maxAge: 24 * 60 * 60 * 1000,
-            domain: 'localhost',
-            secure: false,
-            httpOnly: true,
-        },
-        resave: false,
-        saveUninitialized: false,
-        store: new MongoStore({ mongooseConnection: mongoose.connection })
-    })
+  session({
+    secret: "${secret}",
+    cookie: {
+      maxAge: 24 * 60 * 60 * 1000,
+      domain: 'localhost',
+      secure: false,
+      httpOnly: true,
+
+    },
+    resave: false,
+    saveUninitialized: false,
+    store: MongoStore.create({ mongoUrl: 'mongodb://127.0.0.1:27017/WeChat'})
+  })
 );
+
+
+const addMsgToRequest = function (req, res, next) {
+  req.msg = 'Intercepted Request';
+  next();
+}
+
+const addMsgToResponse = function(req, res, next) {
+  res.msg = 'Intercepted Response';
+  next();
+}
+
 
 app.post('/login', async (req, res) => {
     try {
-        const { username, password } = req.body;
-        const user = await users.findOne({ username });
+        let { username, password } = req.body;
+        let user = await users.findOne({ username: username });
 
         if (user && await bcrypt.compare(password, user.passwordHash)) {
             req.session.user = user.username.trim();
@@ -71,7 +97,7 @@ app.post('/login', async (req, res) => {
 
 app.post('/logout', (req, res) => {
     req.session.destroy((err) => {
-        if (err) {
+        if(err) {
             console.error('Error destroying session: ', err);
             return res.status(500).json('Internal server error');
         }
@@ -82,10 +108,8 @@ app.post('/logout', (req, res) => {
 app.get('/check-auth', (req, res) => {
     try {
         console.log('Session in check-auth:', req.session);
-
-        // Check if session exists and if session user is set
-        if (req.session && req.session.user !== undefined) {
-            console.log('Session User:', req.session.user);
+        console.log('Session User:', req.session.user);
+        if (req.session && req.session.user) {
             res.status(200).json({ authenticated: true });
         } else {
             res.status(200).json({ authenticated: false });
