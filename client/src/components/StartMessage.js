@@ -17,7 +17,6 @@ export default function StartMessage() {
                 if(searchTerm != "") {
                     setLoading(true);
                     setError(null);
-
                     try {
                         const response = await axios.get(`http://localhost:8000/users/${searchTerm}/limit15`);
                         setUsers(response.data);
