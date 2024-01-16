@@ -6,16 +6,21 @@ export default function Login() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
 
-    const handleLogin = async() => {
+    const handleLogin = async () => {
         try {
-            console.log('Username:', username);
-            console.log('Password:', password);
-            let response = await axios.post('http://localhost:8000/login', { username, password });
-            if(response.status === 401) {
-                console.log('Invalid Credentials: ', response.data.error);
-            }
+          console.log('Username:', username);
+          console.log('Password:', password);
+          let response = await axios.post(
+            'http://localhost:8000/login',
+            { username, password },
+            { withCredentials: true }
+          );
+          console.log('Response:', response);
+          if (response.status === 401) {
+            console.log('Invalid Credentials: ', response.data.error);
+          }
         } catch (error) {
-            console.error('Error: ', error.message);
+          console.error('Error: ', error.message);
         }
     };
 

@@ -14,7 +14,7 @@ export default function StartMessage() {
 
     useEffect(() => {
             const fetchData = async () => {
-                if(searchTerm != "") {
+                if(searchTerm !== "") {
                     setLoading(true);
                     setError(null);
                     try {
@@ -29,16 +29,25 @@ export default function StartMessage() {
                     } finally {
                         setLoading(false);
                     }
-            }
-            else {
-                setUsers([]);
-            }
-        };
+                }
+                else {
+                    setUsers([]);
+                }
+            };
         fetchData();
     }, [searchTerm]);
 
     const handleSearchChange = (e) => {
         setSearchTerm(e.target.value);
+    }
+
+    const makeChatroom = async(username) => {
+        try {
+            const response = await axios.post('http://localhost:8000/createChatroom', {username}, {withCredentials: true});
+            console.log(response.data);
+        } catch (error) {
+            console.error('Error creating chatroom:', error.message);
+        }
     }
 
     return (
@@ -47,17 +56,15 @@ export default function StartMessage() {
             {showMenu && (
                 <div className="modal">
                     <div className="popup-menu">
-                        <input
-                            type="text"
+                        <input type="text"
                             placeholder="Search users"
                             value={searchTerm}
-                            onChange={handleSearchChange}
-                        />
+                            onChange={handleSearchChange}/>
                         {loading && <p>Loading...</p>}
                         {error && <p style={{ color: 'red' }}>{error}</p>}
                         <ul>
                             {users.map((user, index) => (
-                                <li key={index}>{user.username}</li>
+                                <li key={index} onClick={() => makeChatroom(user.username)}>{user.username}</li>
                             ))}
                         </ul>
                     </div>
