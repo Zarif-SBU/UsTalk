@@ -1,5 +1,5 @@
 # WeTalk
-This is a project dedicated to creating a social media platform such as instagram or twitter. Right now the project is in its early stages.
+This is a project dedicated to creating a messaging site such as instagram or twitter. It is still a work in progress
 
 ## Goals
 - provide a way to login and sigup (complete)
@@ -7,6 +7,10 @@ This is a project dedicated to creating a social media platform such as instagra
 - Create chatrooms(wroking on right)
 - let users view profiles
 - let users make and view posts
+
+## What skills I am learning
+- Eventbased communication between client and server specifically using socket.io to facilitate client-server communication
+- Better front-end develepment skills specifically working on CSS
 
 Navigation:
 
